@@ -1,0 +1,459 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5">
+    <meta name="author" content="AdminKit">
+    <meta name="keywords"
+        content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="shortcut icon" href="/static/logo/logo.png" />
+
+    <link rel="canonical" href="{{ request.build_absolute_uri }}" />
+
+    <title>Dashboard</title>
+    <link href="/static/css/bs.css" rel="stylesheet">
+    <link href="/static/css/app.css" rel="stylesheet">
+    <link href="/static/css/custom.css" rel="stylesheet">
+    <link href="/static/css/datatable.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- App theme: sits after the template CSS files so it wins over them. Pages can still override it in custom_css -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+        .wrapper, .main { background-color: #f1f5f9; }
+        .content { padding: 1.5rem 1.5rem 1rem; }
+
+        /* ---------- Sidebar ---------- */
+        .sidebar, .sidebar-content { background: #0f172a !important; }
+
+        /* The sidebar stays in view; the menu list itself scrolls when it is taller than the screen.
+           (Scrolling is on .sidebar-nav, so it works even if the SimpleBar script is not active.) */
+        .sidebar {
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+        }
+        .sidebar-nav {
+            max-height: calc(100vh - 96px);
+            max-height: calc(100dvh - 96px);
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            overscroll-behavior: contain;
+            padding-bottom: 2rem;
+            scrollbar-width: thin;
+            scrollbar-color: #334155 transparent;
+        }
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-brand { padding: 1.1rem 1.5rem; }
+        .sidebar-link, a.sidebar-link {
+            color: #94a3b8 !important;
+            background: transparent !important;
+            border-left: 3px solid transparent;
+            padding: 0.7rem 1.4rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .sidebar-link svg, a.sidebar-link svg, .sidebar-link i { color: #94a3b8; transition: color 0.2s ease; }
+        .sidebar-link:hover, a.sidebar-link:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.06) !important;
+        }
+        .sidebar-link:hover svg, .sidebar-link:hover i { color: #ffffff; }
+        .sidebar-item.active > .sidebar-link,
+        .sidebar-item.active > a.sidebar-link {
+            color: #ffffff !important;
+            background: rgba(37, 99, 235, 0.2) !important;
+            border-left-color: #3b82f6;
+        }
+        .sidebar-item.active > .sidebar-link svg { color: #60a5fa; }
+        .sidebar-brand {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 0.4rem;
+        }
+        .sidebar-header {
+            padding: 1.1rem 1.5rem 0.4rem !important;
+            font-size: 0.68rem !important;
+            font-weight: 700;
+            letter-spacing: 0.9px;
+            text-transform: uppercase;
+            color: #475569 !important;
+            background: transparent !important;
+        }
+        .sidebar-link i, .sidebar-link svg { margin-right: 0.75rem; }
+
+        /* Parent items that open a sub menu: arrow on the right */
+        .sidebar-link.click-drop { display: flex; align-items: center; cursor: pointer; }
+        .sidebar-link.click-drop::after {
+            content: "";
+            margin-left: auto;
+            width: 7px;
+            height: 7px;
+            border-right: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            transform: rotate(45deg);
+            transition: transform 0.2s ease;
+            opacity: 0.7;
+        }
+        .sidebar-item.open > .sidebar-link.click-drop::after { transform: rotate(-135deg); }
+
+        /* A page inside the sub menu is open: parent text goes white, no full bar */
+        .sidebar-item.has-active > .sidebar-link { color: #ffffff !important; }
+        .sidebar-item.has-active > .sidebar-link svg,
+        .sidebar-item.has-active > .sidebar-link i { color: #60a5fa; }
+
+        /* ---------- Sub menu (kept off the <ul> itself so open/close still works) ---------- */
+        .m_i {
+            list-style: none;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .m_i li {
+            list-style: none !important;
+            margin: 0.1rem 1rem 0.1rem 2.35rem;
+            padding: 0;
+            border-left: 2px solid #1e293b;
+        }
+        .m_i li::before, .m_i li::marker { content: none !important; display: none !important; }
+        .m_i .dropdown-item {
+            display: flex !important;
+            align-items: center;
+            white-space: normal;
+            color: #94a3b8 !important;
+            background: transparent !important;
+            padding: 0.45rem 0.8rem !important;
+            margin-left: -2px;
+            border-left: 2px solid transparent;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .m_i .dropdown-item::before {
+            content: "" !important;
+            display: inline-block !important;
+            flex-shrink: 0;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #475569;
+            margin-right: 0.7rem;
+            transition: background 0.2s ease;
+        }
+        .m_i .dropdown-item:hover { color: #ffffff !important; background: rgba(255, 255, 255, 0.06) !important; }
+        .m_i .dropdown-item:hover::before { background: #94a3b8; }
+        .m_i .dropdown-item.sub-active {
+            color: #ffffff !important;
+            font-weight: 600;
+            background: rgba(37, 99, 235, 0.2) !important;
+            border-left-color: #3b82f6;
+        }
+        .m_i .dropdown-item.sub-active::before { background: #60a5fa; }
+
+        /* ---------- Top navbar ---------- */
+        .navbar-bg {
+            background: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        }
+        #titlePage { font-size: 1.1rem; font-weight: 700; color: #1e293b !important; }
+        .nav-divider { display: inline-block; width: 1px; height: 22px; background: #e2e8f0; margin: 0 0.6rem; }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-right: 0.35rem;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        }
+        .dropdown-menu {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+            padding: 0.4rem;
+        }
+        .navbar .dropdown-item { border-radius: 8px; font-size: 0.88rem; }
+        .navbar .dropdown-menu hr { margin: 0.35rem 0; }
+
+        /* ---------- Footer ---------- */
+        .footer { background: #ffffff; border-top: 1px solid #e2e8f0; }
+
+        /* ---------- Notification toast ---------- */
+        #msg-toast { border-radius: 12px !important; overflow: hidden; min-width: 280px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15) !important; }
+        #msg-toast .toast-header { font-size: 0.85rem; }
+        #msg-toast .toast-body { font-size: 0.88rem; color: #1e293b; }
+
+        /* ---------- Delete confirmation modal ---------- */
+        #DeleteModal .modal-content { border: 0; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2); }
+        #DeleteModal .modal-header, #DeleteModal .modal-footer { background: #f8fafc; border-color: #e2e8f0; }
+        #DeleteModal .btn { border-radius: 999px; padding-left: 1.3rem; padding-right: 1.3rem; }
+    </style>
+    {% block custom_css %}{% endblock %}
+</head>
+
+<body>
+    <div id="loader">
+        <div class="h-100 w-100 d-flex justify-content-center align-items-center flex-column">
+            <img src="/static/logo/logo.png" alt="" class="fade-image" height="100">
+            <div class="neon-loader">
+                <div class="neon-loader-ring"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="js-loader" class="d-none h-100 w-100 position-fixed" style="background-color: #00000034;z-index: 1024">
+        <div class="h-100 w-100 d-flex justify-content-center align-items-center flex-column">
+            <div class="neon-loader">
+                <div class="neon-loader-ring"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="maincontent" class="d-none">
+        {% if messages %}
+        <div class="w-100 d-flex justify-content-center position-fixed top-0 z-2 pt-1">
+            {% for message in messages %}
+            <div class="toast shadow border rounded border-light bg-white d-block" role="alert" id="msg-toast"
+                aria-live="assertive" aria-atomic="true">
+                <div class="toast-header border-bottom pb-1 px-2 bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} text-white pt-1">
+                    <i data-feather="message-square"></i>
+                    <strong class="me-auto ps-2">Notification</strong>
+                </div>
+                <div class="toast-body px-2 pb-1">
+                    {{ message }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="wrapper">
+            <nav id="sidebar" class="sidebar js-sidebar">
+                <div class="sidebar-content js-simplebar">
+                    <a class="sidebar-brand text-center" href="{% url 'home.dashboard' %}">
+                        <img src="/static/logo/logo.png" alt="" height="50">
+                    </a>
+
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-header">Overview</li>
+                        <li class="sidebar-item">
+                            <a class="sidebar-link" href="{% url 'home.dashboard' %}">
+                                <i class="align-middle" data-feather="sliders"></i> <span class="align-middle">Dashboard</span>
+                            </a>
+                        </li>
+
+                        <li class="sidebar-header">Sales</li>
+                        <li class="sidebar-item">
+                            <a class="sidebar-link" href="{% url 'home.invoices' %}">
+                                <i class="align-middle" data-feather="file-text"></i> <span
+                                    class="align-middle">Invoices</span>
+                            </a>
+                        </li>
+
+                        <li class="sidebar-item">
+                            <a class="sidebar-link" href="{% url 'home.customers' %}">
+                                <i class="align-middle" data-feather="users"></i> <span
+                                    class="align-middle">Customers</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a class="sidebar-link" href="{% url 'home.items' %}">
+                                <i class="align-middle" data-feather="package"></i> <span
+                                    class="align-middle">Items</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a class="sidebar-link click-drop" type="button" href="javascript:;">
+                                <i class="align-middle" data-feather="file"></i> <span
+                                    class="align-middle">Reports</span>
+                            </a>
+                            <ul class="m_i">
+                                <li><a class="dropdown-item" href="{% url 'report.items' %}">Items</a></li>
+                                <li><a class="dropdown-item" href="{% url 'report.customers' %}">Customers</a></li>
+                            </ul>
+                        </li>
+                        <li class="sidebar-header">System</li>
+                        <li class="sidebar-item">
+                            <a class="sidebar-link click-drop" type="button" href="javascript:;">
+                                <i class="align-middle" data-feather="settings"></i> <span
+                                    class="align-middle">Settings</span>
+                            </a>
+                            <ul class="m_i">
+                                {% if request.user.is_superuser %}
+                                <li><a class="dropdown-item" href="{% url 'home.users' %}">Users</a></li>
+                                <li><a class="dropdown-item" href="{% url 'home.scenario' %}">Scenario</a></li>
+                                <li><a class="dropdown-item" href="{% url 'home.com-license' %}">License</a></li>
+                                {% endif %}
+
+                                <li><a class="dropdown-item" href="{% url 'home.company-profile' %}">Company Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'home.hs-code' %}">HS Codes</a></li>
+                                <li><a class="dropdown-item" href="{% url 'home.measurment-units' %}">Measurement Units</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- will remvoce this syntax in shared app -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link" href="{% url 'home.license_history' %}">
+                                <i class="align-middle" data-feather="file"></i> <span class="align-middle">Licenses</span>
+                            </a>
+                        </li>
+                        <!-- will remvoce this syntax in shared app -->
+
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="main">
+                <nav class="navbar navbar-expand navbar-light navbar-bg">
+                    <a class="sidebar-toggle js-sidebar-toggle">
+                        <i class="hamburger align-self-center"></i>
+                    </a>
+
+                    <h1 class="h3 d-inline align-middle text-secondary m-0" id="titlePage">{% block page_title %} {% endblock %}</h1>
+
+                    <div class="navbar-collapse collapse">
+                        <ul class="navbar-nav navbar-align">
+
+                            {% block page_anchor %} {% endblock %}
+
+                            <li class="nav-item d-flex align-items-center">
+                                <span class="nav-divider"></span>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#"
+                                    data-bs-toggle="dropdown">
+                                    <i class="align-middle" data-feather="settings"></i>
+                                </a>
+
+                                <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#"
+                                    data-bs-toggle="dropdown">
+                                    <span class="user-avatar">{{ request.user.username|slice:":1" }}</span>
+                                    <span class="fw-semibold text-dark">{{ request.user.username }}</span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" href="{% url 'home.my-profile' %}"><i
+                                            class="align-middle me-1" data-feather="user"></i> Profile</a>
+                                    <hr>
+                                    <a class="dropdown-item" href="{% url 'logout' %}"><i
+                                            class="align-middle me-1" data-feather="log-out"></i> Log out</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <main class="content">
+                    {% block main_section %}
+
+                    {% endblock %}
+                </main>
+
+                <footer class="footer py-1">
+                    <div class="container-fluid text-center">
+                        <p class="mb-0">
+                            <a href="#" class="text-muted fw-bold">@ {% now "Y" %} reserved</a>
+                        </p>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="DeleteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="DeleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-6 fw-bold text-danger" id="DeleteModalLabel">Delete Confirmation</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0"><b>Are you sure you want to delete this record?</b></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                        <a id="deleteRec" href="#" class="btn btn-danger">Yes, delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/datatable.js"></script>
+    <script src="/static/js/custom.js"></script>
+
+    <script>
+        // Sidebar: highlight the page you are on (the longest matching link wins) and keep the arrows in sync
+        (function () {
+            var path = window.location.pathname.replace(/\/+$/, '') || '/';
+            var best = null, bestLen = -1;
+            document.querySelectorAll('#sidebar a[href]').forEach(function (a) {
+                var href = a.getAttribute('href');
+                if (!href || href.charAt(0) === '#' || href.indexOf('javascript') === 0) return;
+                var p = href.split('?')[0].replace(/\/+$/, '') || '/';
+                if (path === p || (p !== '/' && path.indexOf(p + '/') === 0)) {
+                    if (p.length > bestLen) { best = a; bestLen = p.length; }
+                }
+            });
+            if (best) {
+                var item = best.closest('.sidebar-item');
+                if (best.classList.contains('dropdown-item')) {
+                    best.classList.add('sub-active');
+                    if (item) item.classList.add('has-active');
+                } else if (item) {
+                    item.classList.add('active');
+                }
+            }
+
+            // Arrow direction follows whether the sub menu is really visible
+            function syncArrows() {
+                document.querySelectorAll('#sidebar .sidebar-item').forEach(function (li) {
+                    var sub = li.querySelector('.m_i');
+                    if (!sub) return;
+                    var open = sub.offsetHeight > 0 && window.getComputedStyle(sub).display !== 'none';
+                    li.classList.toggle('open', open);
+                });
+            }
+            document.querySelectorAll('#sidebar .click-drop').forEach(function (a) {
+                a.addEventListener('click', function () {
+                    setTimeout(syncArrows, 60);
+                    setTimeout(syncArrows, 450);
+                });
+            });
+            syncArrows();
+            setTimeout(syncArrows, 500);
+        })();
+    </script>
+
+    {% block custom_js %}
+    {% endblock %}
+</body>
+
+</html>

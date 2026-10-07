@@ -1,0 +1,741 @@
+{% extends 'layout.html' %}
+{% block page_title %}
+  Create Sale Invoice
+{% endblock %}
+
+{% block page_anchor %}
+  <li class="nav-item dropdown d-flex align-items-center">
+    <div class="d-inline-flex align-items-center bg-white rounded-pill border shadow-sm px-3 py-1">
+      <span class="text-muted small fw-semibold me-2">Mode:</span>
+      {% if i_mode.is_live %}
+        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">● Live</span>
+      {% else %}
+        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">● Test Mode</span>
+      {% endif %}
+    </div>
+  </li>
+{% endblock %}
+
+{% block main_section %}
+<!-- CUSTOM CSS DIRECTLY INSIDE MAIN SECTION SO IT ALWAYS APPLIES -->
+<style>
+  .invoice-wrapper {
+    background-color: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .ui-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .ui-card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.9rem 1.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ui-card-header .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ui-card-body {
+    padding: 1.4rem;
+  }
+  .field-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #475569;
+    margin-bottom: 0.35rem;
+    display: block;
+  }
+  .field-input {
+    border-radius: 8px;
+    border: 1.5px solid #cbd5e1;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.88rem;
+    color: #0f172a;
+    background-color: #ffffff;
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+  .field-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    outline: none;
+  }
+  .calc-highlight {
+    background-color: #eff6ff !important;
+    border-color: #93c5fd !important;
+    font-weight: 700 !important;
+    color: #1d4ed8 !important;
+  }
+  .item-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+  }
+  .item-card-header {
+    background: #f1f5f9;
+    padding: 0.65rem 1.2rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sub-heading {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #64748b;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sub-heading::before {
+    content: "";
+    width: 3px;
+    height: 12px;
+    background: #2563eb;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .price-calc-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  .add-item-btn {
+    width: 100%;
+    border: 2px dashed #93c5fd;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-radius: 12px;
+    padding: 0.7rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.2s ease;
+  }
+  .add-item-btn:hover {
+    background: #dbeafe;
+  }
+  /* Values filled from FBR's sample for the chosen Sale Type */
+  .auto-filled {
+    background-color: #f0f9ff !important;
+    border-color: #7dd3fc !important;
+  }
+</style>
+
+<div class="invoice-wrapper">
+  <!-- Top Action Header Card -->
+  <div class="ui-card p-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+          <i data-feather="file-text" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold text-dark">Create Sale Invoice</h5>
+          <small class="text-muted">Create an invoice and send it to FBR if needed</small>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'home.invoices' %}" class="btn btn-outline-secondary btn-sm px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1">
+          <i data-feather="arrow-left" style="width: 14px; height: 14px;"></i> Back to Invoices
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        {% if message.tags == 'error' %}
+          <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm border-0 d-flex align-items-center py-2" role="alert">
+            <i data-feather="alert-circle" class="me-2 text-danger"></i>
+            <div>{{ message }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Reminder: this form creates a real invoice -->
+  <div class="alert alert-warning rounded-3 border-0 shadow-sm py-2 px-3 mb-4 d-flex align-items-start gap-2" style="font-size: 13px;">
+    <i data-feather="alert-triangle" class="mt-1 flex-shrink-0" style="width: 15px; height: 15px;"></i>
+    <div>
+      <b>Live mode:</b> with FBR Integrate = Yes, this invoice is sent to FBR and gets a real FBR invoice number.
+      Choosing a Sale Type picks the matching FBR scenario and fills the tax rate and SRO details from FBR's own sample.
+      Product code, description, HS code, price and quantity must be your real data.
+    </div>
+  </div>
+
+  <!-- Data for the FBR scenario helper (read by the script at the bottom) -->
+  <div id="scenarioData" class="d-none"
+       data-sample-url="{% url 'home.scenario.sample' 'SCODE' %}"
+       data-payload-url="{% url 'home.scenario.payload' 'SCODE' %}"
+       data-payloads-url="{% url 'home.scenario.payloads' %}">
+    {% for s in scenarios %}<span data-code="{{ s.code }}" data-sale-type="{{ s.sale_type }}"></span>{% endfor %}
+  </div>
+
+  <form action="" method="post">
+    {% csrf_token %}
+
+    <!-- Card 1: Master Invoice Details -->
+    <div class="ui-card">
+      <div class="ui-card-header">
+        <h6 class="card-title">
+          <i data-feather="sliders" class="text-primary" style="width: 16px; height: 16px;"></i> Invoice Details
+        </h6>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Step 1 of 2</span>
+      </div>
+      <div class="ui-card-body">
+        <div class="row g-3">
+          <div class="col-md-6 col-lg-4">
+            <label for="customer" class="field-label">Customer <span class="text-danger">*</span></label>
+            <select class="field-input form-select" required name="customer" id="customer">
+              <option value="" selected>Select customer...</option>
+              {% for customer in customers %}
+                <option value="{{ customer.id }}">{{ customer.company_name }} ({{ customer.register_type }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <label for="invoiceRefNo" class="field-label">Ref Invoice #</label>
+            <input type="text" class="field-input" name="invoiceRefNo" id="invoiceRefNo" placeholder="e.g. INV-001" />
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <label for="invoiceDate" class="field-label">Invoice Date</label>
+            <input type="date" class="field-input" name="invoiceDate" id="invoiceDate" value="{% now 'Y-m-d' %}" />
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <label class="field-label">
+              FBR Integrate
+              <span class="text-muted ms-1" title="If 'Yes', invoice will be transmitted to FBR immediately" style="cursor: pointer;">
+                <i data-feather="help-circle" style="width: 12px; height: 12px;"></i>
+              </span>
+            </label>
+            <div class="btn-group w-100" role="group">
+              <input type="radio" class="btn-check" name="fbr_integrate" id="fbrYes" value="1" required>
+              <label class="btn btn-outline-primary btn-sm py-2" for="fbrYes">
+                <i data-feather="check" style="width: 13px; height: 13px;"></i> Yes (Sync)
+              </label>
+              <input type="radio" class="btn-check" name="fbr_integrate" id="fbrNo" value="0" checked required>
+              <label class="btn btn-outline-secondary btn-sm py-2" for="fbrNo">
+                <i data-feather="x" style="width: 13px; height: 13px;"></i> No (Draft)
+              </label>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <label for="with_holding_tax" class="field-label">Withholding Tax</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted border-end-0">Rs</span>
+              <input type="number" step="any" class="field-input border-start-0" name="with_holding_tax" id="with_holding_tax" value="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Line Items in Card Style -->
+    <div class="ui-card">
+      <div class="ui-card-header">
+        <div>
+          <h6 class="card-title">
+            <i data-feather="package" class="text-primary" style="width: 16px; height: 16px;"></i> Invoice Line Items
+          </h6>
+          <small class="text-muted">Totals are calculated automatically from price, quantity and tax rate</small>
+        </div>
+      </div>
+
+      <!-- Item cards are added here by JavaScript -->
+      <div class="ui-card-body" id="invItemBdy"></div>
+
+      {% if i_mode.is_live %}
+      <div class="px-4 pb-4">
+        <button type="button" class="add-item-btn AddNewItem">
+          <i data-feather="plus" style="width: 16px; height: 16px;"></i> New Item
+        </button>
+      </div>
+      {% endif %}
+
+      <!-- Action Footer -->
+      <div class="d-flex justify-content-end align-items-center gap-2 p-3 bg-light border-top">
+        <a href="{% url 'home.invoices' %}" class="btn btn-light px-4 py-2 rounded-pill">Cancel</a>
+        <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-2">
+          <i data-feather="check-circle" style="width: 16px; height: 16px;"></i> Create Invoice
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+  var uomOpts = '<option value="">Select UOM</option>';
+  var saleOpts = '<option value="">Select Type</option>';
+  var optionsLoaded = false;
+
+  var trashIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
+
+  // Builds the HTML of one item card. ids get a random prefix so they stay unique.
+  function buildItemHtml() {
+    var uid = Math.random().toString(36).substring(2, 10);
+    return `
+      <div class="item-card">
+        <div class="item-card-header">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary px-3 py-1 rounded-pill item-no">Item #1</span>
+            <small class="text-muted d-none d-md-inline">Fill product specifications & values</small>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-danger rounded-pill remove-inv-item d-inline-flex align-items-center gap-1" title="Remove item">
+            ${trashIcon} Remove
+          </button>
+        </div>
+        <div class="p-3">
+          <!-- 1. Product Identification -->
+          <div class="sub-heading">1. Product Identification</div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6 col-lg-3">
+              <label class="field-label">Product Code <span class="text-danger">*</span></label>
+              <input type="text" required name="product_code" class="field-input itemName" id="${uid}itemCodes" placeholder="e.g. PRD-001" />
+            </div>
+            <div class="col-md-6 col-lg-4">
+              <label class="field-label">Product Description <span class="text-danger">*</span></label>
+              <input type="text" required name="product_description" class="field-input itemName" id="${uid}itemDEscriptions" placeholder="Item description" />
+            </div>
+            <div class="col-md-6 col-lg-2">
+              <label class="field-label">HS Code <span class="text-danger">*</span></label>
+              <input type="text" required name="hs_code" class="field-input itemName" id="${uid}hs_codes" placeholder="e.g. 1001.10" />
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <label class="field-label">UOM (Measurement) <span class="text-danger">*</span></label>
+              <select name="uom" required class="field-input form-select" id="${uid}uom">${uomOpts}</select>
+            </div>
+          </div>
+
+          <!-- 2. Pricing, Quantity & Automatic Valuation -->
+          <div class="sub-heading">2. Pricing, Quantity & Tax Calculation</div>
+          <div class="price-calc-box">
+            <div class="row g-2">
+              <div class="col-6 col-md-4 col-lg-2">
+                <label class="field-label">Retail / Unit Price</label>
+                <input type="number" onchange="updateTotalValues(this)" step="any" name="unit_price" class="field-input text-end retailPriceCls" id="${uid}retailPrices" placeholder="0.00" />
+              </div>
+              <div class="col-6 col-md-4 col-lg-2">
+                <label class="field-label">Quantity</label>
+                <input type="number" step="any" onchange="updateTotalValues(this)" name="quantity" class="field-input text-end qtyAlv" id="${uid}quantities" placeholder="1" />
+              </div>
+              <div class="col-6 col-md-4 col-lg-2">
+                <label class="field-label">Tax Rate (%) <span class="text-danger">*</span></label>
+                <input type="number" required onchange="updateTotalValues(this)" min="0" step="any" name="rate" class="field-input text-end taxRate" id="${uid}rates" placeholder="18" />
+              </div>
+              <div class="col-6 col-md-4 col-lg-2">
+                <label class="field-label text-primary">Value Excl. ST</label>
+                <input type="number" required step="any" name="valueSalesExcludingST" class="field-input text-end valueSalesExcludingSTCls" id="${uid}valueSalesExcludingST" />
+              </div>
+              <div class="col-6 col-md-4 col-lg-2">
+                <label class="field-label text-success">Sales Tax App.</label>
+                <input type="number" step="any" required name="salesTaxApplicable" class="field-input text-end salesTaxApplicableCls" id="${uid}salesTaxApplicable" />
+              </div>
+              <div class="col-6 col-md-4 col-lg-2">
+                <label class="field-label text-dark fw-bold">Total Values</label>
+                <input type="number" step="any" name="totalValues" class="field-input text-end calc-highlight tVlus" id="${uid}totalValues" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Sale Type & Additional Taxes -->
+          <div class="sub-heading">3. Sale Type & Advanced Tax Attributes</div>
+          <div class="scenarioNote d-none"></div>
+          <div class="row g-2">
+            <div class="col-md-6 col-lg-4">
+              <label class="field-label">Sale Type <span class="text-danger">*</span></label>
+              <select required name="saleType" onchange="updateTotalValues(this)" class="field-input form-select" id="${uid}saleType">${saleOpts}</select>
+            </div>
+            <div class="col-md-6 col-lg-4 scenario-col">
+              <label class="field-label">FBR Scenario</label>
+              <select class="field-input form-select scenarioPick" id="${uid}scenarioPick"><option value="">Select a Sale Type first</option></select>
+              <a href="#" target="_blank" class="payloadLink small d-none mt-1">View FBR sample payload</a>
+            </div>
+
+            <div class="col-6 col-md-3 col-lg-2">
+              <label class="field-label">ST Withheld (%)</label>
+              <input type="number" max="100" min="0" required step="any" name="salesTaxWithheldAtSource" class="field-input text-end" id="${uid}salesTaxWithheldAtSource" value="0" />
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+              <label class="field-label">Extra Tax</label>
+              <input type="number" step="any" value="0" name="extraTax" class="field-input text-end" id="${uid}extraTax" />
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+              <label class="field-label">Further Tax</label>
+              <input type="number" step="any" value="0" name="furtherTax" class="field-input text-end" id="${uid}furtherTax" />
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+              <label class="field-label">FED Payable</label>
+              <input type="number" value="0" step="any" name="fedPayable" class="field-input text-end" id="${uid}fedPayable" />
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+              <label class="field-label">Discount</label>
+              <input type="number" value="0" step="any" name="discount" class="field-input text-end" id="${uid}discount" />
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+              <label class="field-label">SRO Schedule</label>
+              <input type="text" name="sroScheduleNo" class="field-input" id="${uid}sroScheduleNo" />
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+              <label class="field-label">SRO Serial No</label>
+              <input type="text" name="sroItemSerialNo" class="field-input" id="${uid}sroItemSerialNo" />
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Keeps "Item #N" correct and hides Remove when only one item is left
+  function renumberItems() {
+    var cards = $('#invItemBdy .item-card');
+    cards.each(function (i) {
+      $(this).find('.item-no').text('Item #' + (i + 1));
+    });
+    // d-none (not .hide()): the button has d-inline-flex, which would beat an inline display:none
+    cards.find('.remove-inv-item').toggleClass('d-none', cards.length <= 1);
+  }
+
+  function addItemCard() {
+    $('#invItemBdy').append(buildItemHtml());
+    if (!SCENARIOS.length) {
+      // no scenario list came from the server: show the picker as unavailable instead of hiding it
+      $('#invItemBdy .scenarioPick').prop('disabled', true).html('<option value="">Scenario list not loaded</option>');
+      if (!window._scenarioWarned) {
+        window._scenarioWarned = true;
+        console.warn('FBR scenarios: no list received. Pass "scenarios" (code + sale_type) in the view context or in /dashboard/get-ajax-items.');
+      }
+    }
+    renumberItems();
+    if (window.feather) feather.replace();
+  }
+
+  $(function () {
+    $.ajax({
+      url: "/dashboard/get-ajax-items",
+      type: "get",
+      success: function (response) {
+        // Set removes the repeated entries (several scenarios share one sale type)
+        Array.from(new Set(response.uoms)).forEach(function (e) {
+          uomOpts += '<option value="' + e + '">' + e + '</option>';
+        });
+        Array.from(new Set(response.sale_type)).forEach(function (e) {
+          saleOpts += '<option value="' + e + '">' + e + '</option>';
+        });
+        if (Array.isArray(response.scenarios)) {
+          response.scenarios.forEach(function (sc) {
+            var code = sc.code, st = sc.sale_type || sc.saleType;
+            if (code && st && !SCENARIOS.some(function (x) { return x.code === code; })) {
+              SCENARIOS.push({ code: code, saleType: st });
+            }
+          });
+        }
+        function finish() {
+          optionsLoaded = true;
+          $('#invItemBdy').empty();
+          addItemCard();
+        }
+        if (SCENARIOS.length) { finish(); } else { loadScenariosFromPayloads().then(finish); }
+      },
+      error: function (error) {
+        console.log(error);
+      }
+    });
+  });
+
+  $(document).on('click', '.AddNewItem', function () {
+    if (!optionsLoaded) return;
+    addItemCard();
+  });
+
+  $(document).on('click', '.remove-inv-item', function () {
+    $(this).closest('.item-card').remove();
+    renumberItems();
+  });
+
+
+  /* ---------- FBR scenario helper ----------
+     Picking a Sale Type selects the matching FBR scenario (SN number) and fills the tax settings
+     from FBR's own sample payload. Only rate and SRO details are copied: product details, price,
+     quantity and tax amounts always stay yours. */
+  var scenarioBox = document.getElementById('scenarioData');
+  var SCENARIOS = [];
+  if (scenarioBox) {
+    scenarioBox.querySelectorAll('span[data-code]').forEach(function (el) {
+      SCENARIOS.push({ code: el.getAttribute('data-code'), saleType: el.getAttribute('data-sale-type') || '' });
+    });
+  }
+  var sampleUrlTpl = scenarioBox ? scenarioBox.getAttribute('data-sample-url') : '';
+  var payloadUrlTpl = scenarioBox ? scenarioBox.getAttribute('data-payload-url') : '';
+  var payloadsUrl = scenarioBox ? scenarioBox.getAttribute('data-payloads-url') : '';
+
+  /* If the server did not send a scenario list, read it from the "All Scenario Payloads (JSON)" page:
+     every payload there has a scenario number (SN...) and the saleType of its item. */
+  var CODE_RE = /^SN\d+/i;
+
+  function findSaleType(node, depth) {
+    if (!node || typeof node !== 'object' || (depth || 0) > 4) return '';
+    if (typeof node.saleType === 'string' && node.saleType) return node.saleType;
+    var keys = Object.keys(node);
+    for (var i = 0; i < keys.length; i++) {
+      var v = node[keys[i]];
+      if (v && typeof v === 'object') {
+        var r = findSaleType(v, (depth || 0) + 1);
+        if (r) return r;
+      }
+    }
+    return '';
+  }
+
+  function collectScenarios(node, hint, out) {
+    if (Array.isArray(node)) { node.forEach(function (n) { collectScenarios(n, hint, out); }); return; }
+    if (!node || typeof node !== 'object') return;
+    var code = '';
+    ['scenarioId', 'code'].forEach(function (k) {
+      if (!code && typeof node[k] === 'string' && CODE_RE.test(node[k])) code = node[k];
+    });
+    code = code || hint;
+    if (code) {
+      var st = findSaleType(node, 0);
+      if (st) { if (!out[code]) out[code] = st; return; }
+    }
+    Object.keys(node).forEach(function (k) { collectScenarios(node[k], CODE_RE.test(k) ? k : hint, out); });
+  }
+
+  function loadScenariosFromPayloads() {
+    if (!payloadsUrl) return Promise.resolve();
+    return fetch(payloadsUrl, { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var found = {};
+        collectScenarios(data, '', found);
+        Object.keys(found).forEach(function (code) { SCENARIOS.push({ code: code, saleType: found[code] }); });
+        console.info('FBR scenarios read from the payloads list:', SCENARIOS.length);
+      })
+      .catch(function (err) { console.warn('FBR scenarios: could not read the payloads list.', err); });
+  }
+  var sampleCache = {};
+  var pickCounter = 0;
+  var SAMPLE_FIELDS = ['rate', 'salesTaxWithheldAtSource', 'sroScheduleNo', 'sroItemSerialNo'];
+  var AMOUNT_FIELDS = { extraTax: 'Extra Tax', furtherTax: 'Further Tax', fedPayable: 'FED Payable' };
+
+  function norm(v) { return (v === null || v === undefined ? '' : String(v)).trim().toLowerCase(); }
+
+  function candidatesFor(saleType) {
+    return SCENARIOS.filter(function (x) { return norm(x.saleType) === norm(saleType); });
+  }
+
+  function loadSample(code) {
+    if (!sampleCache[code]) {
+      sampleCache[code] = fetch(sampleUrlTpl.replace('SCODE', encodeURIComponent(code)), { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .catch(function () {
+          delete sampleCache[code];
+          return { error: 'Could not load the FBR sample for ' + code + '.' };
+        });
+    }
+    return sampleCache[code];
+  }
+
+  // "Company name (Registered)" -> "registered"
+  function customerType() {
+    var c = document.getElementById('customer');
+    if (!c || !c.value) return '';
+    var m = /\(([^)]+)\)\s*$/.exec(c.options[c.selectedIndex].text.trim());
+    return m ? norm(m[1]) : '';
+  }
+
+  function showScenarioNote(card, lines, kind) {
+    var box = card.find('.scenarioNote');
+    if (!lines || !lines.length) { box.attr('class', 'scenarioNote d-none').empty(); return; }
+    box.attr('class', 'scenarioNote alert alert-' + (kind || 'info') + ' py-2 px-3 mb-2 rounded-3 border-0 shadow-sm')
+      .css('font-size', '13px')
+      .html(lines.map(function (l) { return '<div>' + l + '</div>'; }).join(''));
+  }
+
+  function setSampleField(card, name, value) {
+    var el = card.find('[name="' + name + '"]')[0];
+    if (!el) return;
+    if (value === null || value === undefined || value === '') {
+      // the sample has nothing here: clear only what an earlier sample filled in
+      if (el.dataset.auto === '1') {
+        el.value = (name === 'salesTaxWithheldAtSource') ? '0' : '';
+        delete el.dataset.auto;
+        el.classList.remove('auto-filled');
+      }
+      return;
+    }
+    el.value = value;
+    el.dataset.auto = '1';
+    el.classList.add('auto-filled');
+  }
+
+  function applySample(card, code, d) {
+    if (!d || !d.fields) {
+      showScenarioNote(card, [(d && d.error) || ('No FBR sample values were found for ' + code + '. Enter the tax details by hand.')], 'warning');
+      return;
+    }
+    SAMPLE_FIELDS.forEach(function (k) { setSampleField(card, k, d.fields[k]); });
+
+    var lines = ['<b>' + code + '</b> selected. Tax rate and SRO details were filled from FBR\'s sample. You can still edit them.'];
+    var warn = false;
+    (d.notes || []).forEach(function (n) { lines.push(n); warn = true; });
+
+    var amounts = Object.keys(AMOUNT_FIELDS).filter(function (k) { return parseFloat(d.fields[k]) > 0; })
+      .map(function (k) { return AMOUNT_FIELDS[k]; });
+    if (amounts.length) {
+      lines.push('FBR\'s sample uses <b>' + amounts.join(', ') + '</b> for this scenario. Enter these amounts for your real figures.');
+      warn = true;
+    }
+
+    var want = norm(d.buyer_type), have = customerType();
+    if (want && have && want !== have) {
+      lines.push('Warning: this scenario expects a <b>' + d.buyer_type + '</b> customer, the selected customer is different.');
+      warn = true;
+    } else if (want && !have) {
+      lines.push('This scenario is for a <b>' + d.buyer_type + '</b> customer. Select one above.');
+    }
+    showScenarioNote(card, lines, warn ? 'warning' : 'info');
+
+    card.find('.payloadLink').attr('href', payloadUrlTpl.replace('SCODE', encodeURIComponent(code))).removeClass('d-none');
+    var rateInput = card.find('.taxRate')[0];
+    if (rateInput) updateTotalValues(rateInput);
+  }
+
+  function resetScenarioUi(card, placeholder) {
+    card.find('.scenarioPick').html('<option value="">' + placeholder + '</option>').val('');
+    card.find('.payloadLink').addClass('d-none');
+    showScenarioNote(card, []);
+  }
+
+  // Sale Type changed (or customer changed): choose the scenario and load FBR's sample
+  function pickScenario(card) {
+    var saleType = card.find('select[name="saleType"]').val();
+    var token = ++pickCounter;
+    card.data('pickToken', token);
+    card.removeData('scenarioManual');
+    if (!SCENARIOS.length) return;   // scenario list not provided: the helper stays off
+    if (!saleType) { resetScenarioUi(card, 'Select a Sale Type first'); return; }
+
+    var cands = candidatesFor(saleType);
+    if (!cands.length) {
+      resetScenarioUi(card, 'No FBR scenario for this Sale Type');
+      showScenarioNote(card, ['No FBR sample scenario was found for this Sale Type. Enter the tax details by hand.'], 'warning');
+      return;
+    }
+    var sel = card.find('.scenarioPick');
+    sel.html(cands.map(function (c) { return '<option value="' + c.code + '">' + c.code + '</option>'; }).join(''));
+
+    Promise.all(cands.map(function (c) { return loadSample(c.code); })).then(function (samples) {
+      if (card.data('pickToken') !== token) return;   // a newer choice was made meanwhile
+      var idx = 0, have = customerType();
+      if (cands.length > 1 && have) {
+        // several scenarios share this Sale Type: prefer the one made for the selected customer type
+        for (var i = 0; i < samples.length; i++) {
+          if (samples[i] && norm(samples[i].buyer_type) === have) { idx = i; break; }
+        }
+      }
+      sel.val(cands[idx].code);
+      applySample(card, cands[idx].code, samples[idx]);
+    });
+  }
+
+  $(document).on('change', 'select[name="saleType"]', function () {
+    pickScenario($(this).closest('.item-card'));
+  });
+
+  // The user picked another scenario by hand
+  $(document).on('change', '.scenarioPick', function () {
+    var card = $(this).closest('.item-card'), code = this.value;
+    card.data('scenarioManual', true);
+    card.data('pickToken', ++pickCounter);
+    if (!code) { showScenarioNote(card, []); return; }
+    loadSample(code).then(function (d) { applySample(card, code, d); });
+  });
+
+  // A different customer type can mean a different scenario
+  $(document).on('change', '#customer', function () {
+    $('#invItemBdy .item-card').each(function () {
+      var card = $(this);
+      if (card.find('select[name="saleType"]').val() && !card.data('scenarioManual')) pickScenario(card);
+    });
+  });
+
+  // Typing in an auto-filled box makes it yours again
+  $(document).on('input', '.item-card input', function () {
+    if (this.dataset.auto) { delete this.dataset.auto; this.classList.remove('auto-filled'); }
+  });
+
+  function updateTotalValuesSlect(e) {
+    let tr = e.closest('.item-card') || e.parentElement.parentElement;
+    let itemOpt = $(tr).find('.selectItem');
+    let item = itemOpt.val();
+    let selectedOption = itemOpt[0].options[itemOpt[0].selectedIndex];
+    let tax = selectedOption.getAttribute('data-tax');
+    let price = selectedOption.getAttribute('data-price');
+    $(tr).find('.taxRate').val(tax);
+    $(tr).find('.retailPriceCls').val(price);
+  }
+
+  function updateTotalValues(e) {
+    let tr = e.closest('.item-card') || e.parentElement.parentElement;
+    let price = $(tr).find('.retailPriceCls').val();
+    let rate = $(tr).find('.taxRate').val();
+    let qty = $(tr).find('.qtyAlv').val();
+    let totalInp = $(tr).find('.tVlus');
+    let valueSalesExcludingSTCls = $(tr).find('.valueSalesExcludingSTCls');
+    let salesTaxApplicableCls = $(tr).find('.salesTaxApplicableCls');
+
+    let tP = parseFloat(price || 0) * parseFloat(qty || 0);
+    valueSalesExcludingSTCls.val(tP.toFixed(2));
+    // Cement / CNG are taxed in rupees per unit: the Tax Rate box holds the rupee amount
+    let saleTypeVal = ($(tr).find('select[name="saleType"]').val() || '').toLowerCase();
+    let rupeeType = saleTypeVal.indexOf('cement') !== -1 || saleTypeVal.indexOf('cng sales') !== -1;
+    // Potassium chlorate: 18% of the value + Rs.60 per kg (FBR's only rate for it)
+    let potassium = saleTypeVal.indexOf('potassium chlorate') !== -1;
+    let TaxTotal = potassium
+      ? (0.18 * tP + 60 * parseFloat(qty || 0))
+      : (rupeeType
+        ? parseFloat(rate || 0) * parseFloat(qty || 0)
+        : ((parseFloat(rate || 0) * parseFloat(price || 0)) / 100) * parseFloat(qty || 0));
+    salesTaxApplicableCls.val(TaxTotal.toFixed(2));
+    let AllToal = tP + TaxTotal;
+    totalInp.val(AllToal.toFixed(2));
+  }
+</script>
+{% endblock custom_js %}

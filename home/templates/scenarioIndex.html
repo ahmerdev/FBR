@@ -1,0 +1,322 @@
+{% extends 'layout.html' %}
+{% block page_title %}
+  Scenarios
+{% endblock %}
+
+{% block main_section %}
+<!-- CUSTOM CSS DIRECTLY INSIDE MAIN SECTION SO IT ALWAYS APPLIES -->
+<style>
+  .invoice-wrapper {
+    background-color: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .ui-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .ui-card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.9rem 1.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ui-card-header .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ---------- Table ---------- */
+  .inv-table {
+    border-collapse: separate !important;
+    border-spacing: 0;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 0 !important;
+  }
+  .inv-table thead th {
+    background: #f1f5f9 !important;
+    color: #334155;
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+    padding: 0.85rem 0.9rem !important;
+    border: 0 !important;
+    border-bottom: 2px solid #2563eb !important;
+    vertical-align: middle;
+  }
+  .inv-table tbody td {
+    font-size: 0.88rem;
+    color: #0f172a;
+    padding: 0.7rem 0.9rem !important;
+    vertical-align: middle;
+    border: 0 !important;
+    border-bottom: 1px solid #eef2f7 !important;
+  }
+  .inv-table tbody tr:last-child td { border-bottom: 0 !important; }
+  .inv-table tbody tr:nth-child(even) td { background: #fafcff; }
+  .inv-table tbody tr:hover td { background: #eff6ff; }
+  .inv-table td:first-child,
+  .inv-table th:first-child { padding-left: 1.1rem !important; width: 48px; }
+  .code-chip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1d4ed8;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+  }
+
+  /* ---------- DataTables controls (search, page size, info, pagination) ---------- */
+  .dataTables_wrapper .dataTables_length,
+  .dataTables_wrapper .dataTables_filter,
+  .dt-container .dt-length,
+  .dt-container .dt-search { margin-bottom: 0.9rem; font-size: 0.84rem; color: #475569; font-weight: 600; }
+  .dataTables_wrapper .dataTables_filter input,
+  .dataTables_wrapper .dataTables_length select,
+  .dt-container .dt-search input,
+  .dt-container .dt-length select {
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 0.4rem 0.7rem !important;
+    font-size: 0.86rem;
+    color: #0f172a;
+    background-color: #ffffff;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .dataTables_wrapper .dataTables_filter input:focus,
+  .dataTables_wrapper .dataTables_length select:focus,
+  .dt-container .dt-search input:focus,
+  .dt-container .dt-length select:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+  .dataTables_wrapper .dataTables_info,
+  .dt-container .dt-info { font-size: 0.82rem; color: #64748b; padding-top: 1rem; }
+  .dataTables_wrapper .dataTables_paginate,
+  .dt-container .dt-paging { padding-top: 0.8rem; }
+  .dataTables_wrapper .dataTables_paginate .paginate_button,
+  .dt-container .dt-paging .dt-paging-button {
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: #475569 !important;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.25rem 0.8rem !important;
+    margin: 0 2px;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover,
+  .dt-container .dt-paging .dt-paging-button:hover {
+    border-color: #93c5fd !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+  .dt-container .dt-paging .dt-paging-button.current {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+  .dt-container .dt-paging .dt-paging-button.disabled { opacity: 0.45; }
+  .dt-buttons .btn, .dt-buttons .dt-button {
+    border-radius: 999px !important;
+    font-size: 0.82rem;
+    margin-right: 6px;
+  }
+</style>
+
+<div class="invoice-wrapper">
+  <!-- Top Action Header Card -->
+  <div class="ui-card p-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+          <i data-feather="layers" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold text-dark">Scenarios</h5>
+          <small class="text-muted">Mark your business scenarios and run them on the FBR Sandbox</small>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <!-- Run every pending scenario on the FBR Sandbox -->
+        <form method="post" action="{% url 'home.scenario.autorun' %}" class="d-inline" data-autorun
+              data-confirm="All pending scenarios will be run on the FBR Sandbox. Continue?">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success btn-sm px-3 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-1">
+            <i data-feather="play" style="width: 14px; height: 14px;"></i> Auto-Complete Pending Scenarios
+          </button>
+        </form>
+        <a class="btn btn-outline-secondary btn-sm px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1" href="{% url 'home.scenario.payloads' %}" target="_blank">
+          <i data-feather="code" style="width: 14px; height: 14px;"></i> All Scenario Payloads (JSON)
+        </a>
+        <a class="btn btn-primary btn-sm px-3 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-1" data-bs-toggle="modal" href="#AddScenario">
+          <i data-feather="plus" style="width: 14px; height: 14px;"></i> Add Scenario
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scenarios Table Card -->
+  <div class="ui-card">
+    <div class="ui-card-header">
+      <h6 class="card-title">
+        <i data-feather="list" class="text-primary" style="width: 16px; height: 16px;"></i> Your Scenarios
+      </h6>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">{{ datalist|length }} scenario{{ datalist|length|pluralize }}</span>
+    </div>
+    <div class="p-3">
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle inv-table datatable">
+          <thead>
+            <tr>
+              <th scope="col">Sr. No.</th>
+              <th scope="col">Scenario Code</th>
+              <th scope="col">Scenario Description</th>
+              <th scope="col" class="text-center">Status</th>
+              <th scope="col" class="text-center no-sort no-export">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for data in datalist %}
+            <tr>
+              <td scope="row">{{ forloop.counter }}</td>
+              <td><span class="code-chip">{{ data.code }}</span></td>
+              <td>{{ data.description }}</td>
+              <td class="text-center">
+                {% if data.is_success %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Successful</span>
+                {% else %}
+                  <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">Pending</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <div class="d-flex align-items-center justify-content-center flex-wrap gap-1">
+                  {% if not data.is_success %}
+                    <!-- Run just this scenario on the FBR Sandbox -->
+                    <form method="post" action="{% url 'home.scenario.autorun' %}" class="d-inline" data-autorun
+                          data-confirm="Run {{ data.code }} on the FBR Sandbox?">
+                      {% csrf_token %}
+                      <input type="hidden" name="codes" value="{{ data.code }}">
+                      <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                        <i data-feather="play" style="width: 13px; height: 13px;"></i> Run Test
+                      </button>
+                    </form>
+                  {% endif %}
+                  <a href="{% url 'home.scenario.payload' data.code %}" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                    <i data-feather="code" style="width: 13px; height: 13px;"></i> Payload
+                  </a>
+                  <button type="button" data-href="{% url 'home.scenario.delete' data.code %}" class="btn btn-danger btn-sm rounded-pill px-3 deleteToggle d-inline-flex align-items-center gap-1">
+                    <i data-feather="trash" style="width: 13px; height: 13px;"></i> Remove
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Scenario -->
+<div class="modal fade" id="AddScenario" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="AddScenarioLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <form class="modal-content border-0 shadow" style="border-radius: 14px; overflow: hidden;" method="post">
+      <div class="modal-header bg-light">
+        <div class="d-flex align-items-center gap-2">
+          <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i data-feather="check-square" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div>
+            <h1 class="modal-title fs-6 fw-bold text-dark mb-0" id="AddScenarioLabel">Mark Your Business Scenarios</h1>
+            <small class="text-muted">Tick the scenarios that apply to your business and hit Save</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% csrf_token %}
+        <div class="table-responsive">
+          <table class="table table-sm align-middle inv-table">
+            <thead>
+              <tr>
+                <th scope="col" class="text-center">Mark</th>
+                <th scope="col">Sr. No</th>
+                <th scope="col">Scenario</th>
+                <th scope="col">Description</th>
+                <th scope="col">Sale Type <span class="text-muted text-lowercase fw-normal">(Purchase type in case of Cotton Ginners)</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for data in scenario_datalist %}
+              <tr>
+                <td scope="row" class="text-center">
+                  {% if data.code in default_code %}
+                    <span class="text-white bg-success p-1 rounded d-inline-flex" title="Already added">
+                      <i data-feather="check-square" style="width: 16px; height: 16px;"></i>
+                    </span>
+                  {% else %}
+                    <input type="checkbox" class="form-check-input" style="width: 1.15rem; height: 1.15rem; cursor: pointer;" value="{{ data.code }}" name="scenario_code" id="scenario_mark_{{ data.code }}">
+                  {% endif %}
+                </td>
+                <td>{{ forloop.counter }}</td>
+                <td><span class="code-chip">{{ data.code }}</span></td>
+                <td>{{ data.description }}</td>
+                <td>{{ data.sale_type }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-light px-4 py-2 rounded-pill" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-2">
+          <i data-feather="save" style="width: 16px; height: 16px;"></i> Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Confirm before running, and stop double-clicks while FBR is answering
+document.querySelectorAll('form[data-autorun]').forEach(function (form) {
+  form.addEventListener('submit', function (e) {
+    var msg = form.getAttribute('data-confirm');
+    if (msg && !confirm(msg)) {
+      e.preventDefault();
+      return;
+    }
+    var btn = form.querySelector('button[type=submit]');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Running... please wait';
+    }
+  });
+});
+</script>
+{% endblock %}

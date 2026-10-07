@@ -1,0 +1,21 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+
+# Env
+venv/
+.env
+
+# Django
+db.sqlite3
+*.log
+settings.py
+private.pem
+*.key
+fbr.zip
+media/license_files/
+
+# OS
+.DS_Store
+Thumbs.db

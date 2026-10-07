@@ -1,0 +1,310 @@
+{% extends 'layout.html' %}
+{% block page_title %}
+  Company Profile
+{% endblock %}
+
+{% block main_section %}
+<!-- CUSTOM CSS DIRECTLY INSIDE MAIN SECTION SO IT ALWAYS APPLIES -->
+<style>
+  .invoice-wrapper {
+    background-color: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .ui-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .ui-card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.9rem 1.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ui-card-header .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ---------- Table ---------- */
+  .inv-table {
+    border-collapse: separate !important;
+    border-spacing: 0;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 0 !important;
+  }
+  .inv-table thead th {
+    background: #f1f5f9 !important;
+    color: #334155;
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+    padding: 0.85rem 0.9rem !important;
+    border: 0 !important;
+    border-bottom: 2px solid #2563eb !important;
+    vertical-align: middle;
+  }
+  .inv-table tbody td {
+    font-size: 0.88rem;
+    color: #0f172a;
+    padding: 0.7rem 0.9rem !important;
+    vertical-align: middle;
+    border: 0 !important;
+    border-bottom: 1px solid #eef2f7 !important;
+  }
+  .inv-table tbody tr:last-child td { border-bottom: 0 !important; }
+  .inv-table tbody tr:nth-child(even) td { background: #fafcff; }
+  .inv-table tbody tr:hover td { background: #eff6ff; }
+  .inv-table td:first-child,
+  .inv-table th:first-child { padding-left: 1.1rem !important; width: 48px; }
+
+  .code-chip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1d4ed8;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+  }
+
+  /* ---------- DataTables controls (search, page size, info, pagination) ---------- */
+  .dataTables_wrapper .dataTables_length,
+  .dataTables_wrapper .dataTables_filter,
+  .dt-container .dt-length,
+  .dt-container .dt-search { margin: 0; font-size: 0.84rem; color: #475569; font-weight: 600; }
+  /* Keep Search / page-size / CSV / PDF on one straight line */
+  .dataTables_wrapper > .row:first-child,
+  .dataTables_wrapper > .row:last-child,
+  .dt-container .dt-layout-row { align-items: center; margin-bottom: 0.9rem; }
+  .dataTables_wrapper .dataTables_filter label,
+  .dataTables_wrapper .dataTables_length label,
+  .dt-container .dt-search label,
+  .dt-container .dt-length label { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0; }
+  .dataTables_wrapper .dt-buttons,
+  .dt-container .dt-buttons { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+  .dt-buttons .btn, .dt-buttons .dt-button { margin: 0 !important; }
+  .dataTables_wrapper .dataTables_filter input,
+  .dataTables_wrapper .dataTables_length select,
+  .dt-container .dt-search input,
+  .dt-container .dt-length select {
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 0.4rem 0.7rem !important;
+    font-size: 0.86rem;
+    color: #0f172a;
+    background-color: #ffffff;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .dataTables_wrapper .dataTables_filter input:focus,
+  .dataTables_wrapper .dataTables_length select:focus,
+  .dt-container .dt-search input:focus,
+  .dt-container .dt-length select:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+  .dataTables_wrapper .dataTables_info,
+  .dt-container .dt-info { font-size: 0.82rem; color: #64748b; padding-top: 1rem; }
+  .dataTables_wrapper .dataTables_paginate,
+  .dt-container .dt-paging { padding-top: 0.8rem; }
+  .dataTables_wrapper .dataTables_paginate .paginate_button,
+  .dt-container .dt-paging .dt-paging-button {
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: #475569 !important;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.25rem 0.8rem !important;
+    margin: 0 2px;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover,
+  .dt-container .dt-paging .dt-paging-button:hover {
+    border-color: #93c5fd !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+  .dt-container .dt-paging .dt-paging-button.current {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+  .dt-container .dt-paging .dt-paging-button.disabled { opacity: 0.45; }
+  .dt-buttons .btn, .dt-buttons .dt-button {
+    border-radius: 999px !important;
+    font-size: 0.82rem;
+    margin-right: 6px;
+  }
+
+  .ui-card-body {
+    padding: 1.4rem;
+  }
+  .field-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #475569;
+    margin-bottom: 0.35rem;
+    display: block;
+  }
+  .field-input {
+    border-radius: 8px;
+    border: 1.5px solid #cbd5e1;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.88rem;
+    color: #0f172a;
+    background-color: #ffffff;
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+  .field-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    outline: none;
+  }
+  .field-input { min-height: 42px; }
+  .fbr-toggle { display: flex; gap: 0.5rem; }
+  .fbr-toggle .btn {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-width: 1.5px;
+    border-radius: 8px;
+  }
+  .inv-table thead th.num { text-align: right; }
+  .inv-table tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+
+<div class="invoice-wrapper">
+  <!-- Top Action Header Card -->
+  <div class="ui-card p-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;"><i data-feather="briefcase" style="width: 22px; height: 22px;"></i></div>
+        <div>
+          <h5 class="mb-0 fw-bold text-dark">Company Profile</h5>
+          <small class="text-muted">Your company details and FBR credentials</small>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Section 1: Company details -->
+    <div class="ui-card">
+      <div class="ui-card-header">
+        <h6 class="card-title">
+          <i data-feather="briefcase" class="text-primary" style="width: 16px; height: 16px;"></i> Company Details
+        </h6>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Section 1 of 2</span>
+      </div>
+      <div class="ui-card-body">
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <label for="company_name" class="field-label">Company Name <span class="text-danger">*</span></label>
+            <input type="text" name="company_name" value="{{ data.company_name }}" required id="company_name" class="form-control field-input" placeholder="company name here" aria-describedby="helpId" />
+          </div>
+          <div class="col-12 col-lg-6">
+            <label for="company_ntn_cnic" class="field-label">Company NTN/CNIC <span class="text-danger">*</span></label>
+            <input type="text" name="company_ntn_cnic" value="{{ data.company_ntn_cnic }}" required id="company_ntn_cnic" class="form-control field-input" placeholder="company ntn or cnic here" aria-describedby="helpId" />
+          </div>
+          <div class="col-12 col-lg-6">
+            <label for="phone" class="field-label">Company Phone # <span class="text-danger">*</span></label>
+            <input type="text" name="phone" value="{{ data.phone }}" required id="phone" class="form-control field-input" placeholder="company phone number here" aria-describedby="helpId" />
+          </div>
+          <div class="col-12 col-lg-6">
+            <label for="email" class="field-label">Company Email <span class="text-danger">*</span></label>
+            <input type="email" name="email" value="{{ data.email }}" required id="email" class="form-control field-input" placeholder="company email here" aria-describedby="helpId" />
+          </div>
+          <div class="col-12">
+            <label for="address" class="field-label">Company Address <span class="text-danger">*</span></label>
+            <input type="text" name="address" value="{{ data.address }}" required id="address" class="form-control field-input" placeholder="company address here" aria-describedby="helpId" />
+          </div>
+          <div class="col-12 col-lg-6">
+            <label for="province" class="field-label">Company Province <span class="text-danger">*</span></label>
+            <select class="field-input form-select" required name="province" id="province">
+              <option value="">Select one</option>
+              <option value="Sindh" {% if data.province == "Sindh" %}selected{% endif %}>Sindh</option>
+              <option value="Punjab" {% if data.province == "Punjab" %}selected{% endif %}>Punjab</option>
+              <option value="KPK" {% if data.province == "KPK" %}selected{% endif %}>KPK</option>
+              <option value="Balochistan" {% if data.province == "Balochistan" %}selected{% endif %}>Balochistan</option>
+              <option value="AJK & GB" {% if data.province == "AJK & GB" %}selected{% endif %}>AJK & GB</option>
+            </select>
+          </div>
+          <div class="col-12 col-lg-6">
+              <div class="d-flex align-items-end gap-3">
+                {% if data.company_logo %}
+                <img src="/media/{{ data.company_logo }}" alt="Company logo" class="border bg-white p-1 rounded-3" style="object-fit: contain;" width="64" height="64">
+                {% endif %}
+                <div class="flex-grow-1">
+                  <label for="company_logo" class="field-label">Company Logo</label>
+                  <input type="file" accept="image/*" class="form-control field-input" name="company_logo" id="company_logo" aria-describedby="fileHelpId" />
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if request.user.is_superuser %}
+    <!-- Section 2: FBR credentials (super admin only) -->
+    <div class="ui-card">
+      <div class="ui-card-header">
+        <h6 class="card-title">
+          <i data-feather="key" class="text-primary" style="width: 16px; height: 16px;"></i> FBR API Credentials
+        </h6>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Section 2 of 2</span>
+      </div>
+      <div class="ui-card-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label for="sandbox_api" class="field-label">FBR Dashboard Sandbox API</label>
+            <input type="text" name="sandbox_api" value="{{ data.sandbox_api }}" id="sandbox_api" class="form-control field-input" placeholder="sandbox API here" aria-describedby="helpId" />
+          </div>
+          <div class="col-12">
+            <label for="live_api" class="field-label">FBR Dashboard Live API</label>
+            <input type="text" name="live_api" value="{{ data.live_api }}" id="live_api" class="form-control field-input" placeholder="live API here" aria-describedby="helpId" />
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Footer -->
+    <div class="d-flex justify-content-end align-items-center gap-2 p-3 bg-white border rounded-4 shadow-sm">
+      <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-2">
+        <i data-feather="check-circle" style="width: 16px; height: 16px;"></i> Save And Update
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

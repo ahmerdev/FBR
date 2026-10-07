@@ -1,0 +1,122 @@
+<div class="table-responsive">
+    <table class="table table-bordered table-sm">
+        <thead>
+            <tr>
+                <th scope="col" class="w-25">Item</th>
+                <th scope="col" class="w-25">HS Code</th>
+                <th scope="col" class="w-25">UOM</th>
+                <th scope="col">Retail price</th>
+                <th scope="col">Tax Rate (%)</th>
+                <th scope="col">Qty</th>
+                <th scope="col">Total Values</th>
+                <th class="text-capitalize">value Sales Excluding ST</th>
+                <th class="text-capitalize">sales Tax Applicable</th>
+                <th class="text-capitalize">sales Tax Withheld At Source (%)</th>
+                <th class="text-capitalize">extra Tax</th>
+                <th class="text-capitalize">further Tax</th>
+                <th class="text-capitalize">sro Schedule No</th>
+                <th class="text-capitalize">fed Payable</th>
+                <th class="text-capitalize">discount</th>
+                <th class="text-capitalize">sale Type</th>
+                <th class="text-capitalize">sro Item Serial No</th>
+                <th scope="col">Remove</th>
+            </tr>
+        </thead>
+        <tbody id="invItemBdy">
+            
+            {% for data in datalist %}
+            <tr class="">
+                <td>
+                    <input type="text" step="any" style="min-width: 6rem;"
+                        name="item" class="form-control form-control-sm" value="{{data.item_name}}" id="item{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="text" step="any" style="min-width: 6rem;"
+                        name="hs_code" class="form-control form-control-sm" value="{{data.hs_code}}" id="hs_code{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="text" step="any" style="min-width: 6rem;"
+                        name="uom" class="form-control form-control-sm" value="{{data.unit_of_measurment}}" id="uom{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" onchange="updateTotalValues(this)" step="any" style="min-width: 6rem;"
+                        name="retailPrice" class="retailPriceCls form-control form-control-sm" value="{{data.product_price}}" id="retailPrices_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" onchange="updateTotalValues(this)" max="100" min="0" step="any"
+                        style="min-width: 6rem;" name="rate" value="{{data.tax_rate}}" class="taxRate form-control form-control-sm" id="rates_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" onchange="updateTotalValues(this)" style="min-width: 6rem;" name="quantity"
+                        class="qtyAlv form-control form-control-sm" value="{{data.quantity}}" id="quantities_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" step="any" style="min-width: 6rem;" value="{{data.total_values}}" name="totalValues"
+                        class="tVlus form-control form-control-sm" id="totalValues_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" required="" step="any" style="min-width: 6rem;" 
+                    value="{{data.value_sales_excluding_st}}" name="valueSalesExcludingST"
+                        class="form-control form-control-sm valueSalesExcludingSTCls" id="valueSalesExcludingST_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" value="{{data.sales_tax_applicable}}" required="" style="min-width: 6rem;" name="salesTaxApplicable"
+                        class="form-control form-control-sm salesTaxApplicableCls" id="salesTaxApplicable_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" max="100" min="0" required="" step="any" style="min-width: 6rem;"
+                        name="salesTaxWithheldAtSource" class="form-control form-control-sm"
+                        id="salesTaxWithheldAtSource_{{forloop.counter}}" value="{{data.sales_tax_withheld_at_source}}">
+                </td>
+                <td>
+                    <input type="number" step="any" value="{{data.extra_tax}}" style="min-width: 6rem;" name="extraTax"
+                        class="form-control form-control-sm" id="extraTax_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" step="any" value="{{data.further_tax}}" style="min-width: 6rem;" name="furtherTax"
+                        class="form-control form-control-sm" id="furtherTax_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="text" style="min-width: 6rem;" name="sroScheduleNo" value="{{data.sro_schedule_no}}"
+                        class="form-control form-control-sm" id="sroScheduleNo_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" value="{{data.fed_payable}}" step="any" style="min-width: 6rem;" name="fedPayable"
+                        class="form-control form-control-sm" id="fedPayable_{{forloop.counter}}">
+                </td>
+                <td>
+                    <input type="number" value="{{data.discount}}" step="any" style="min-width: 6rem;" name="discount"
+                        class="form-control form-control-sm" id="discount_{{forloop.counter}}">
+                </td>
+                <td>
+                    <select style="min-width: 6rem;" name="saleType" required class="form-control form-control-sm" id="saleType_{{forloop.counter}}">
+                        <option value="" selected="">select one</option>
+                        
+                        {% for sl in scenario_list %}
+                        <option value="{{sl.sale_type}}" {% if data.sale_type|lower == sl.sale_type|lower %}selected{% endif %}>{{sl.sale_type}}</option>
+                        {% endfor %}
+                            
+                    </select>
+                </td>
+                <td>
+                    <input type="text" style="min-width: 6rem;" name="sroItemSerialNo" value="{{data.sro_item_serial_no}}"
+                        class="form-control form-control-sm" id="sroItemSerialNo_{{forloop.counter}}">
+                </td>
+                <td class="text-center d-flex justify-content-center align-items-center">
+                    <span class="text-danger remove-inv-item" style="cursor: pointer;"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="feather feather-trash-2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg></span>
+                </td>
+            </tr>
+            {% endfor %}
+                
+        </tbody>
+    </table>
+</div>

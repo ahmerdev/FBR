@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+{% block page_title %}
+Download License File
+{% endblock %}
+{% block main_section %}
+<div class="bg-white rounded p-5 d-flex flex-column align-items-center">
+    
+    {% if data %}
+    <a href="/media/{{data.license_file}}" download="license.key" class="btn btn-success">
+        <i data-feather="download"></i>
+        Download License File
+    </a>
+    {% else %}
+    <a href="#" download="license.key" class="btn btn-success">
+        <i data-feather="download"></i>
+        Download License File
+    </a>
+    {% endif %}
+        
+</div>
+
+{% endblock %}

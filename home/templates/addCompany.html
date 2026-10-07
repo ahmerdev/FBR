@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5">
+    <meta name="author" content="AdminKit">
+    <meta name="keywords"
+        content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="shortcut icon" href="/static/logo/logo.png" />
+
+    <link rel="canonical" href="{{ request.build_absolute_uri }}" />
+
+    <title>Add company</title>
+
+    <link href="/static/css/app.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        input::placeholder { color: rgb(170, 170, 170) !important; font-size: 12px !important; }
+        .ui-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .ui-card-header {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.9rem 1.4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ui-card-header .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        .ui-card-body { padding: 1.4rem; }
+        .field-label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #475569;
+            margin-bottom: 0.35rem;
+            display: block;
+        }
+        .field-input {
+            border-radius: 8px;
+            border: 1.5px solid #cbd5e1;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.88rem;
+            color: #0f172a;
+            background-color: #ffffff;
+            width: 100%;
+            min-height: 42px;
+            transition: all 0.2s ease;
+        }
+        .field-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            outline: none;
+        }
+        .step-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #1d4ed8;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            padding: 0.2rem 0.7rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-4 pb-5" style="max-width: 980px;">
+
+        <!-- Header card -->
+        <div class="ui-card p-3 mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 21H3"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><path d="M9 9v.01"></path><path d="M9 13v.01"></path><path d="M9 17v.01"></path></svg>
+                </div>
+                <div>
+                    <h5 class="mb-0 fw-bold text-dark">Add Company Detail</h5>
+                    <small class="text-muted">Set up your company in two quick steps</small>
+                </div>
+            </div>
+        </div>
+
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Setup 1/2 -->
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h6 class="card-title">Company Details</h6>
+                    <span class="step-badge">Setup 1 of 2</span>
+                </div>
+                <div class="ui-card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-6">
+                            <label for="company_name" class="field-label">Company Name <span class="text-danger">*</span></label>
+                            <input type="text" name="company_name" required id="company_name" class="form-control field-input"
+                                placeholder="company name here" aria-describedby="helpId" />
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <label for="company_ntn_cnic" class="field-label">Company NTN/CNIC <span class="text-danger">*</span></label>
+                            <input type="text" name="company_ntn_cnic" required id="company_ntn_cnic" class="form-control field-input"
+                                placeholder="company ntn or cnic here" aria-describedby="helpId" />
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <label for="phone" class="field-label">Company Phone # <span class="text-danger">*</span></label>
+                            <input type="text" name="phone" required id="phone" class="form-control field-input"
+                                placeholder="company phone number here" aria-describedby="helpId" />
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <label for="email" class="field-label">Company Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" required id="email" class="form-control field-input"
+                                placeholder="company email here" aria-describedby="helpId" />
+                        </div>
+                        <div class="col-12">
+                            <label for="address" class="field-label">Company Address <span class="text-danger">*</span></label>
+                            <input type="text" name="address" required id="address" class="form-control field-input"
+                                placeholder="company address here" aria-describedby="helpId" />
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <label for="province" class="field-label">Company Province <span class="text-danger">*</span></label>
+                            <select class="form-select field-input" required name="province" id="province">
+                                <option value="" selected>Select one</option>
+                                <option value="Sindh">Sindh</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="KPK">KPK</option>
+                                <option value="Balochistan">Balochistan</option>
+                                <option value="AJK & GB">AJK & GB</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <label for="company_logo" class="field-label">Company Logo <span class="text-danger">*</span></label>
+                            <input type="file" accept="image/*" required class="form-control field-input" name="company_logo" id="company_logo"
+                                aria-describedby="fileHelpId" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Setup 2/2 -->
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h6 class="card-title">FBR API Credentials</h6>
+                    <span class="step-badge">Setup 2 of 2</span>
+                </div>
+                <div class="ui-card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="sandbox_api" class="field-label">FBR Dashboard Sandbox API</label>
+                            <input type="text" name="sandbox_api" id="sandbox_api" class="form-control field-input"
+                                placeholder="sandbox API here" aria-describedby="helpId" />
+                        </div>
+                        <div class="col-12">
+                            <label for="live_api" class="field-label">FBR Dashboard Live API</label>
+                            <input type="text" name="live_api" id="live_api" class="form-control field-input"
+                                placeholder="live API here" aria-describedby="helpId" />
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end align-items-center gap-2 p-3 bg-light border-top">
+                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-2">
+                        Add And Continue <span class="fw-bold" style="font-size: 1rem;">&rarr;</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

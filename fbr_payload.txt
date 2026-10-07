@@ -1,0 +1,36 @@
+{
+  "invoiceType": "Sale Invoice",
+  "invoiceDate": "2026-10-02",
+  "sellerNTNCNIC": "1234567",
+  "sellerBusinessName": "YOUR SELLER NAME",
+  "sellerProvince": "Sindh",
+  "sellerAddress": "YOUR SELLER ADDRESS",
+  "buyerNTNCNIC": "1234567",
+  "buyerBusinessName": "YOUR BUYER NAME",
+  "buyerProvince": "Punjab",
+  "buyerAddress": "YOUR BUYER ADDRESS",
+  "buyerRegistrationType": "Registered",
+  "invoiceRefNo": "",
+  "scenarioId": "SN008",
+  "items": [
+    {
+      "hsCode": "0101.2100",
+      "productDescription": "SN008 sample item",
+      "rate": "18%",
+      "uoM": "Numbers, pieces, units",
+      "quantity": 1.0,
+      "totalValues": 118.0,
+      "valueSalesExcludingST": 100.0,
+      "fixedNotifiedValueOrRetailPrice": 100.0,
+      "salesTaxApplicable": 18.0,
+      "salesTaxWithheldAtSource": 0.0,
+      "extraTax": "",
+      "furtherTax": 0.0,
+      "sroScheduleNo": "",
+      "fedPayable": 0.0,
+      "discount": 0.0,
+      "saleType": "3rd Schedule Goods",
+      "sroItemSerialNo": ""
+    }
+  ]
+}

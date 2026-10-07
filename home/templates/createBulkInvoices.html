@@ -1,0 +1,228 @@
+{% extends 'layout.html' %}
+{% block page_title %}
+Create Sale Invoice
+{% endblock %}
+{% block page_anchor %}
+<li class="nav-item dropdown d-flex justify-content-center align-items-center">
+    <div class="d-flex justify-content-center align-items-center rounded-pill border shadow-sm px-2 py-1">
+        <span>Invoicing Mode: </span>
+        {% if i_mode.is_live %}
+        <a href="javascript:;" class="text-success ps-2 pe-1"><i data-feather="toggle-left"></i></a>
+        <span class="text-success">Live </span>
+        {% else %}
+        <a href="javascript:;" class="text-muted ps-2 pe-1"><i data-feather="toggle-right"></i></a>
+        <span class="text-muted">Test </span>
+        {% endif %}
+    </div>
+</li>
+{% endblock %}
+{% block main_section %}
+<div class="bg-white rounded p-2">
+    <div class="text-end mb-3 d-flex justify-content-end align-items-center">
+
+        <a href="{% url 'home.invoices' %}" class="btn btn-secondary"><i data-feather="x"></i> Cancel</a>
+    </div>
+
+
+    {% if messages %}
+    <div class="w-100 p-3">
+        {% for message in messages %}
+        {% if message.tags == "error" %}
+        <ul class="text-danger">
+            <li>{{ message }}.</li>
+        </ul>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div>
+        <form action="" method="post">
+            {% csrf_token %}
+            <h4 class="text-secondary">Invoice Details</h4>
+            <div class="row w-100 m-auto border rounded px-1 py-3 mb-3">
+                <div class="col-md-6 col-lg-3">
+                    <div class="mb-3">
+                        <label for="customer" class="form-label d-flex justify-content-start align-items-center">
+                            <span>
+                                Customer <span class="text-danger">*</span>
+                            </span>
+                        </label>
+                        <select class="form-select" required name="customer" id="customer">
+                            <option value="" selected>Select one</option>
+                            {% for customer in customers %}
+                            <option value="{{customer.id}}">{{customer.company_name}} ({{customer.register_type}})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="mb-3">
+                        <label for="invoiceRefNo" class="form-label">Ref Invoice #</label>
+                        <input type="text" class="form-control" name="invoiceRefNo" id="invoiceRefNo"
+                            aria-describedby="helpId" placeholder="" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <label for="invoiceRefNo" class="form-label">FBR Integrate <span
+                            title="If this value is 'Yes', then invoice will sent to FBR immediately"
+                            style="cursor: pointer;">?</span></label>
+                    <div class="d-flex form-control">
+                        <div class="form-check">
+                            <input class="form-check-input" required value="1" type="radio" name="fbr_integrate"
+                                id="fbrYes" />
+                            <label class="form-check-label" for="fbrYes"> Yes </label>
+                        </div>
+                        <div class="form-check ms-3">
+                            <input class="form-check-input" required value="0" type="radio" name="fbr_integrate"
+                                id="fbrNo" checked />
+                            <label class="form-check-label" for="fbrNo">
+                                No
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="mb-3">
+                        <label for="invoiceDate" class="form-label">invoice Date</label>
+                        <input type="date" class="form-control" name="invoiceDate" id="invoiceDate"
+                            aria-describedby="helpId" placeholder="" value="{% now 'Y-m-d' %}" />
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="mb-3">
+                        <label for="with_holding_tax" class="form-label">Withholding Tax</label>
+                        <input type="number" step="any" class="form-control" name="with_holding_tax" id="with_holding_tax"
+                            aria-describedby="helpId" value="0" placeholder="" />
+                    </div>
+                </div>
+            </div>
+
+            <div id="uploadfileCOnt">
+                <h4 class="text-secondary">Upload Invoice File</h4>
+                <div class="row w-100 m-auto border rounded px-1 py-3 mb-3">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="mb-3">
+                            <label for="invoiceFile" class="form-label">Sample Invoice File</label> <br>
+                            <a href="/static/invoice sample.xlsx" download="invoice sample" class="btn btn btn-secondary"><i data-feather="download"></i> Download</a>
+                            <div class="form-text">invoice sample file for bulk upload</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="mb-3">
+                            <label for="invoiceFile" class="form-label">Upload Invoice File</label>
+                            <input type="file" class="form-control" name="invoiceFile" id="invoiceFile"
+                                aria-describedby="helpId" placeholder="" accept=".xls,.xlsx" />
+                            <div class="form-text">Upload Invoice File in excel format</div>
+                            <div class="form-text text-danger d-none" id="JSSERR"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="d-none" id="invItemTable">
+                <h4 class="text-secondary">Invoice Items Details</h4>
+                <div class="row w-100 m-auto border rounded px-1 py-3 mb-3">
+                    <div class="col-12" id="execelitem">
+                    </div>
+
+                    <div class="col-12 text-end my-3">
+                        <button type="submit" class="btn btn-success">
+                            <i data-feather="save"></i> Create Invoice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+    document.getElementById("invoiceFile").addEventListener("change", function () {
+        let fileInput = this;
+        if (fileInput.files.length === 0) return;
+        $('#js-loader').removeClass('d-none')
+        $('#execelitem').html('')
+        let formData = new FormData();
+        formData.append("invoiceFile", fileInput.files[0]);
+        let csrf = '{{csrf_token}}';
+        formData.append("csrfmiddlewaretoken", csrf);   
+        fetch("/dashboard/get-the-excel-content", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status){
+                $('#execelitem').html(data.html);
+                $('#invItemTable').toggleClass("d-none");
+                $('#JSSERR').addClass("d-none");
+                // you can show parsed Excel data in table here
+            }
+            else{
+                $('#JSSERR').removeClass("d-none");
+                $('#JSSERR').html(data.error);
+            }
+        })
+        .catch(error => {
+            console.error("Error uploading file:", error);
+        });
+        setTimeout(fn=>{
+            $('#js-loader').addClass('d-none')
+            $('html, body').animate({
+                scrollTop: $('#invItemTable').offset().top
+            }, 500, function() {
+                $('#invItemTable').focus();
+            });
+        },500)
+    });
+</script>
+
+<script>    
+    function remINvItem() {
+        $(".remove-inv-item").click(function () {
+            let c = this.parentElement.parentElement
+            let p = c.parentElement
+            p.removeChild(c)
+        })
+    }
+
+    function updateTotalValuesSlect(e) {
+        let tr = e.parentElement.parentElement;
+        let itemOpt = $(tr).find(".selectItem");
+        let item = itemOpt.val();
+        let selectedOption = itemOpt[0].options[itemOpt[0].selectedIndex];
+        let tax = selectedOption.getAttribute("data-tax");
+        let price = selectedOption.getAttribute("data-price");
+        $(tr).find(".taxRate").val(tax);
+        $(tr).find(".retailPriceCls").val(price);
+    }
+
+    function updateTotalValues(e) {
+        let tr = e.parentElement.parentElement;
+
+        let price = $(tr).find(".retailPriceCls").val();
+        let rate = $(tr).find(".taxRate").val();
+        let qty = $(tr).find(".qtyAlv").val();
+        let totalInp = $(tr).find(".tVlus");
+        let valueSalesExcludingSTCls = $(tr).find(".valueSalesExcludingSTCls");
+        let salesTaxApplicableCls = $(tr).find(".salesTaxApplicableCls");
+
+        let tP = price * parseFloat(qty)
+        valueSalesExcludingSTCls.val(tP)
+        let TaxTotal = ((parseFloat(rate) * price) / 100) * parseFloat(qty);
+        salesTaxApplicableCls.val(TaxTotal)
+        let AllToal = tP + TaxTotal;
+        totalInp.val(AllToal.toFixed(2));
+    }
+</script>
+
+{% endblock custom_js %}

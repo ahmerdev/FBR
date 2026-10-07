@@ -1,0 +1,495 @@
+{% extends 'layout.html' %}
+{% block page_title %}
+  Create Test Invoice
+{% endblock %}
+
+{% block page_anchor %}
+  <li class="nav-item dropdown d-flex align-items-center">
+    <div class="d-inline-flex align-items-center bg-white rounded-pill border shadow-sm px-3 py-1">
+      <span class="text-muted small fw-semibold me-2">Mode:</span>
+      {% if i_mode.is_live %}
+        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">● Live</span>
+      {% else %}
+        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">● Test Mode</span>
+      {% endif %}
+    </div>
+  </li>
+{% endblock %}
+
+{% block main_section %}
+<!-- CUSTOM CSS DIRECTLY INSIDE MAIN SECTION SO IT ALWAYS APPLIES -->
+<style>
+  .invoice-wrapper {
+    background-color: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .ui-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .ui-card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.9rem 1.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ui-card-header .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ui-card-body {
+    padding: 1.4rem;
+  }
+  .field-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #475569;
+    margin-bottom: 0.35rem;
+    display: block;
+  }
+  .field-input {
+    border-radius: 8px;
+    border: 1.5px solid #cbd5e1;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.88rem;
+    color: #0f172a;
+    background-color: #ffffff;
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+  .field-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    outline: none;
+  }
+  .calc-highlight {
+    background-color: #eff6ff !important;
+    border-color: #93c5fd !important;
+    font-weight: 700 !important;
+    color: #1d4ed8 !important;
+  }
+  .item-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+  }
+  .item-card-header {
+    background: #f1f5f9;
+    padding: 0.65rem 1.2rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sub-heading {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #64748b;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sub-heading::before {
+    content: "";
+    width: 3px;
+    height: 12px;
+    background: #2563eb;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .price-calc-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+</style>
+
+<div class="invoice-wrapper">
+  <!-- Top Action Header Card -->
+  <div class="ui-card p-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+          <i data-feather="file-text" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold text-dark">Create Test Invoice</h5>
+          <small class="text-muted">Simulate and test FBR scenario transactions</small>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill font-monospace">
+          <i data-feather="calendar" class="me-1" style="width: 14px; height: 14px;"></i> Date: {% now 'Y-m-d' %}
+        </span>
+        <a href="{% url 'home.invoices' %}" class="btn btn-outline-secondary btn-sm px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1">
+          <i data-feather="arrow-left" style="width: 14px; height: 14px;"></i> Back to Invoices
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        {% if message.tags == 'error' %}
+          <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm border-0 d-flex align-items-center py-2" role="alert">
+            <i data-feather="alert-circle" class="me-2 text-danger"></i>
+            <div>{{ message }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form action="" method="post">
+    {% csrf_token %}
+
+    <!-- Card 1: Master Invoice Details -->
+    <div class="ui-card">
+      <div class="ui-card-header">
+        <h6 class="card-title">
+          <i data-feather="sliders" class="text-primary" style="width: 16px; height: 16px;"></i> Invoice Master Configuration
+        </h6>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Step 1 of 2</span>
+      </div>
+      <div class="ui-card-body">
+        <div class="row g-3">
+          <div class="col-md-6 col-lg-4">
+            <label for="customer" class="field-label">Customer <span class="text-danger">*</span></label>
+            <select class="field-input form-select" required name="customer" id="customer">
+              <option value="" selected>Select customer...</option>
+              {% for customer in customers %}
+                <option value="{{ customer.id }}">{{ customer.company_name }} ({{ customer.register_type }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <label for="invoiceRefNo" class="field-label">Ref Invoice #</label>
+            <input type="text" class="field-input" name="invoiceRefNo" id="invoiceRefNo" placeholder="e.g. TEST-INV-001" />
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <label for="scenarioId" class="field-label">Scenario ID <span class="text-danger">*</span></label>
+            <select class="field-input form-select" required name="scenarioId" id="scenarioId">
+              <option value="" selected>Choose scenario...</option>
+              {% for scenario in scenarios %}
+                <option value="{{ scenario.id }}" data-saleType="{{ scenario.sale_type }}" data-code="{{ scenario.code }}">{{ scenario.code }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <label class="field-label">
+              FBR Integrate
+              <span class="text-muted ms-1" title="If 'Yes', invoice will be transmitted to FBR immediately" style="cursor: pointer;">
+                <i data-feather="help-circle" style="width: 12px; height: 12px;"></i>
+              </span>
+            </label>
+            <div class="btn-group w-100" role="group">
+              <input type="radio" class="btn-check" name="fbr_integrate" id="fbrYes" value="1" required>
+              <label class="btn btn-outline-primary btn-sm py-2" for="fbrYes">
+                <i data-feather="check" style="width: 13px; height: 13px;"></i> Yes (Sync)
+              </label>
+              <input type="radio" class="btn-check" name="fbr_integrate" id="fbrNo" value="0" checked required>
+              <label class="btn btn-outline-secondary btn-sm py-2" for="fbrNo">
+                <i data-feather="x" style="width: 13px; height: 13px;"></i> No (Draft)
+              </label>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <label for="with_holding_tax" class="field-label">Withholding Tax</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted border-end-0">Rs</span>
+              <input type="number" step="any" class="field-input border-start-0" name="with_holding_tax" id="with_holding_tax" value="0" />
+            </div>
+          </div>
+
+          <!-- Scenario Dynamic Alert Box -->
+          <div class="col-12">
+            <div id="scenarioNote" class="alert alert-info py-2 px-3 mb-0 d-none rounded-3 border-0 shadow-sm" style="font-size: 13px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Line Items in Card Style -->
+    <div class="ui-card">
+      <div class="ui-card-header">
+        <div>
+          <h6 class="card-title">
+            <i data-feather="package" class="text-primary" style="width: 16px; height: 16px;"></i> Invoice Line Items
+          </h6>
+          <small class="text-muted">Selecting a scenario above will auto-populate these values</small>
+        </div>
+      </div>
+      <div class="ui-card-body" id="invItemBdy">
+        <!-- ITEM CARD #1 -->
+        <div class="item-card">
+          <div class="item-card-header">
+            <span class="badge bg-primary px-3 py-1 rounded-pill">Item #1</span>
+            <small class="text-muted">Fill product specifications & values</small>
+          </div>
+          <div class="p-3">
+            <!-- 1. Product Identification -->
+            <div class="sub-heading">1. Product Identification</div>
+            <div class="row g-2 mb-3">
+              <div class="col-md-6 col-lg-3">
+                <label class="field-label">Product Code <span class="text-danger">*</span></label>
+                <input type="text" required name="product_code" class="field-input itemName" id="itemCodes" placeholder="e.g. PRD-001" />
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <label class="field-label">Product Description <span class="text-danger">*</span></label>
+                <input type="text" required name="product_description" class="field-input itemName" id="itemDEscriptions" placeholder="Item description" />
+              </div>
+              <div class="col-md-6 col-lg-2">
+                <label class="field-label">HS Code <span class="text-danger">*</span></label>
+                <input type="text" required name="hs_code" class="field-input itemName" id="hs_codes" placeholder="e.g. 1001.10" />
+              </div>
+              <div class="col-md-6 col-lg-3">
+                <label class="field-label">UOM (Measurement) <span class="text-danger">*</span></label>
+                <select name="uom" required class="field-input form-select" id="uom">
+                  <option value="">Select UOM</option>
+                  {% for u in uoms %}
+                    <option value="{{ u.code }}">{{ u.code }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <!-- 2. Pricing, Quantity & Automatic Valuation -->
+            <div class="sub-heading">2. Pricing, Quantity & Tax Calculation</div>
+            <div class="price-calc-box">
+              <div class="row g-2">
+                <div class="col-6 col-md-4 col-lg-2">
+                  <label class="field-label">Retail / Unit Price</label>
+                  <input type="number" onchange="updateTotalValues(this)" step="any" name="unit_price" class="field-input text-end retailPriceCls" id="retailPrices" placeholder="0.00" />
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                  <label class="field-label">Quantity <span class="text-danger">*</span></label>
+                  <input type="number" step="any" onchange="updateTotalValues(this)" name="quantity" class="field-input text-end qtyAlv" id="quantities" placeholder="1" />
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                  <label class="field-label">Tax Rate (%) <span class="text-danger">*</span></label>
+                  <input type="number" required onchange="updateTotalValues(this)" min="0" step="any" name="rate" class="field-input text-end taxRate" id="rates" placeholder="18" />
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                  <label class="field-label text-primary">Value Excl. ST</label>
+                  <input type="number" required step="any" name="valueSalesExcludingST" class="field-input text-end valueSalesExcludingSTCls" id="valueSalesExcludingST" readonly />
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                  <label class="field-label text-success">Sales Tax App.</label>
+                  <input type="number" step="any" required name="salesTaxApplicable" class="field-input text-end salesTaxApplicableCls" id="salesTaxApplicable" readonly />
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                  <label class="field-label text-dark fw-bold">Total Values</label>
+                  <input type="number" step="any" name="totalValues" class="field-input text-end calc-highlight tVlus" id="totalValues" readonly />
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Sale Type & Additional Taxes -->
+            <div class="sub-heading">3. Sale Type & Advanced Tax Attributes</div>
+            <div class="row g-2">
+              <div class="col-md-6 col-lg-4">
+                <label class="field-label">Sale Type <span class="text-danger">*</span></label>
+                <select required name="saleType" class="field-input form-select" id="saleType">
+                  <option value="">Select Type</option>
+                  {% for s in scenarios %}
+                    <option value="{{ s.sale_type }}">{{ s.sale_type }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-6 col-md-3 col-lg-2">
+                <label class="field-label">ST Withheld (%)</label>
+                <input type="number" max="100" min="0" required step="any" name="salesTaxWithheldAtSource" class="field-input text-end" id="salesTaxWithheldAtSource" value="0" />
+              </div>
+              <div class="col-6 col-md-3 col-lg-2">
+                <label class="field-label">Extra Tax</label>
+                <input type="number" step="any" value="0" name="extraTax" class="field-input text-end" id="extraTax" />
+              </div>
+              <div class="col-6 col-md-3 col-lg-2">
+                <label class="field-label">Further Tax</label>
+                <input type="number" step="any" value="0" name="furtherTax" class="field-input text-end" id="furtherTax" />
+              </div>
+              <div class="col-6 col-md-3 col-lg-2">
+                <label class="field-label">FED Payable</label>
+                <input type="number" value="0" step="any" name="fedPayable" class="field-input text-end" id="fedPayable" />
+              </div>
+              <div class="col-6 col-md-3 col-lg-2">
+                <label class="field-label">Discount</label>
+                <input type="number" value="0" step="any" name="discount" class="field-input text-end" id="discount" />
+              </div>
+              <div class="col-6 col-md-3 col-lg-2">
+                <label class="field-label">SRO Schedule</label>
+                <input type="text" name="sroScheduleNo" class="field-input" id="sroScheduleNo" />
+              </div>
+              <div class="col-6 col-md-3 col-lg-2">
+                <label class="field-label">SRO Serial No</label>
+                <input type="text" name="sroItemSerialNo" class="field-input" id="sroItemSerialNo" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="d-flex justify-content-end align-items-center gap-2 p-3 bg-light border-top">
+        <a href="{% url 'home.invoices' %}" class="btn btn-light px-4 py-2 rounded-pill">Cancel</a>
+        <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-2">
+          <i data-feather="check-circle" style="width: 16px; height: 16px;"></i> Create Test Invoice
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+  <script>
+    function updateTotalValuesSlect(e) {
+      let tr = e.closest('.item-card') || e.parentElement.parentElement;
+      let itemOpt = $(tr).find('.selectItem');
+      let item = itemOpt.val();
+      let selectedOption = itemOpt[0].options[itemOpt[0].selectedIndex];
+      let tax = selectedOption.getAttribute('data-tax');
+      let price = selectedOption.getAttribute('data-price');
+      $(tr).find('.taxRate').val(tax);
+      $(tr).find('.retailPriceCls').val(price);
+    }
+    
+    function updateTotalValues(e) {
+      let tr = e.closest('.item-card') || e.parentElement.parentElement;
+      let price = $(tr).find('.retailPriceCls').val();
+      let rate = $(tr).find('.taxRate').val();
+      let qty = $(tr).find('.qtyAlv').val();
+      let totalInp = $(tr).find('.tVlus');
+      let valueSalesExcludingSTCls = $(tr).find('.valueSalesExcludingSTCls');
+      let salesTaxApplicableCls = $(tr).find('.salesTaxApplicableCls');
+    
+      let tP = parseFloat(price || 0) * parseFloat(qty || 0);
+      valueSalesExcludingSTCls.val(tP.toFixed(2));
+      let saleTypeVal = ($(tr).find('select[name="saleType"]').val() || '').toLowerCase();
+      let rupeeType = saleTypeVal.indexOf('cement') !== -1 || saleTypeVal.indexOf('cng sales') !== -1;
+      let potassium = saleTypeVal.indexOf('potassium chlorate') !== -1;
+      let TaxTotal = potassium ? (0.18 * tP + 60 * parseFloat(qty || 0)) : (rupeeType ? parseFloat(rate || 0) * parseFloat(qty || 0) : ((parseFloat(rate || 0) * parseFloat(price || 0)) / 100) * parseFloat(qty || 0));
+      salesTaxApplicableCls.val(TaxTotal.toFixed(2));
+      let AllToal = tP + TaxTotal;
+      totalInp.val(AllToal.toFixed(2));
+    }
+  </script>
+
+  <script>
+    if (document.getElementById('scenarioId')) {
+      document.getElementById('scenarioId').addEventListener('change', function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const saleType = selectedOption.getAttribute('data-saletype');
+        $('#saleType').val(saleType);
+      });
+    }
+  </script>
+
+  <script>
+    ;(function () {
+      var sel = document.getElementById('scenarioId');
+      if (!sel) return;
+      var sampleUrl = "{% url 'home.scenario.sample' 'SCODE' %}";
+
+      function setField(row, name, value) {
+        var el = row.querySelector('[name="' + name + '"]');
+        if (!el) return;
+        if (value === null || value === undefined) value = '';
+        if (value === '' && el.value !== '' && !el.dataset.auto) return;
+        if (el.tagName === 'SELECT' && value !== '') {
+          var exists = Array.prototype.some.call(el.options, function (o) { return o.value === String(value) });
+          if (!exists) {
+            var opt = document.createElement('option');
+            opt.value = value;
+            opt.textContent = value;
+            el.appendChild(opt);
+          }
+        }
+        el.value = value;
+        if (value !== '') el.dataset.auto = '1';
+        else delete el.dataset.auto;
+      }
+
+      var firstRow = document.querySelector('#invItemBdy .item-card');
+      if (firstRow) firstRow.addEventListener('input', function (e) { if (e.target && e.target.dataset) delete e.target.dataset.auto; });
+
+      function showNote(lines, kind) {
+        var box = document.getElementById('scenarioNote');
+        if (!box) return;
+        if (!lines || !lines.length) { box.classList.add('d-none'); return; }
+        box.className = 'alert alert-' + (kind || 'info') + ' py-2 px-3 mb-0 rounded-3 border-0 shadow-sm';
+        box.style.fontSize = '13px';
+        box.innerHTML = lines.map(function (l) { return '<div>' + l + '</div>'; }).join('');
+      }
+
+      sel.addEventListener('change', function () {
+        var opt = sel.options[sel.selectedIndex];
+        var code = ((opt && opt.getAttribute('data-code')) || '').trim();
+        showNote([]);
+        if (!code) return;
+
+        fetch(sampleUrl.replace('SCODE', encodeURIComponent(code)), { credentials: 'same-origin' })
+          .then(function (r) { return r.json() })
+          .then(function (d) {
+            if (!d.fields) { showNote([d.error || 'No sample values for this scenario. Enter the item by hand.'], 'warning'); return; }
+
+            var row = document.querySelector('#invItemBdy .item-card');
+            if (!row) return;
+            Object.keys(d.fields).forEach(function (k) { setField(row, k, d.fields[k]); });
+
+            var lines = ['<b>' + d.code + '</b>: item fields were filled from the scenario sample. You can still edit them.'];
+            ;(d.notes || []).forEach(function (n) { lines.push(n); });
+
+            var cust = document.getElementById('customer');
+            var want = '(' + d.buyer_type + ')';
+            if (cust) {
+              var current = cust.options[cust.selectedIndex] ? cust.options[cust.selectedIndex].text : '';
+              if (!cust.value) {
+                for (var i = 0; i < cust.options.length; i++) {
+                  if (cust.options[i].text.indexOf(want) !== -1) { cust.selectedIndex = i; break; }
+                }
+                if (!cust.value) lines.push('This scenario needs a <b>' + d.buyer_type + '</b> customer, but none was found. Add one first.');
+                else lines.push('A <b>' + d.buyer_type + '</b> customer was selected for you.');
+              } else if (current.indexOf(want) === -1) {
+                lines.push('Warning: this scenario expects a <b>' + d.buyer_type + '</b> customer, the selected customer is different.');
+              }
+            }
+            showNote(lines, (d.notes || []).length ? 'warning' : 'info');
+
+            // Trigger total update calculation
+            var priceInp = row.querySelector('.retailPriceCls');
+            if (priceInp) updateTotalValues(priceInp);
+          })
+          .catch(function () { showNote(['Could not load the scenario sample values.'], 'warning'); });
+      });
+    })();
+  </script>
+{% endblock %}
