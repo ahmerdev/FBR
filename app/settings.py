@@ -146,4 +146,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #overriding the by default url when user successfully logged in
+LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = '/dashboard/'
